@@ -194,3 +194,5 @@ The number of steps for predictive N is too short, the car does not follow the t
 
 * N = 7, dt = 0.07 (T = 0.49s): [video7](https://github.com/GitHubChuanYu/T2Project5_ModelPredictiveControl/blob/master/N_7_dT_007_MPC.mp4)
 Even the car follows the track, but it is off the lane center lane too much, so the performance is not as good as N = 20, dt = 0.025 or N = 10, dt = 0.05.
+
+Eventually, I pick **= 20, dt = 0.025** as my final tuning. Even if it reduces the speed a little bit during curve compared with **N = 10, dt = 0.05**, however it has smooth and more accurate trajectory following during curve.
