@@ -115,6 +115,54 @@ As mentioned above, MPC is used to control car to follow a reference trajectory.
           //Calling MPC controller and upate control outputs
           std::vector<double> solution = mpc.Solve(state, coeffs);
 ```
-3. Lastly, those newly transformed waypoints are polynomial fitted to generate reference trajectory for calculating CTE and Epsi for MPC using two functions defined in main.cpp: **polyfit** and **polyeval**. **polyfit** is used to fit waypoints with a 3rd order polynomial, and **polyeval** is used to find the reference y=f(0) and heading angle psi = arctan(df/dx(0)).
+3. Lastly, those newly transformed waypoints are polynomial fitted to generate reference trajectory for calculating CTE and Epsi for MPC using two functions defined in main.cpp: **polyfit** and **polyeval**. **polyfit** is used to fit waypoints with a 3rd order polynomial, and **polyeval** is used to find the reference y_ref=f(x) and heading angle psi_ref = arctan(df/dx(x)). This is shown in code in MPC.cpp here:
+```sh
+      AD<double> f0 = coeffs[0] + (coeffs[1] * x0) + (coeffs[2] * x0 * x0) + (coeffs[3] * x0 * x0 * x0);
+      AD<double> psides0 = CppAD::atan((3 * coeffs[3] * x0 * x0) + (2 * coeffs[2] * x0) + coeffs[1]);
+```
 
-## Editor Settings
+## MPC dealing with actuator latency
+
+One advantage of MPC compared with PID control is that it can easily deal with actuator latency by incorporting this latency into state equations or model. As suggested in the class, the way to deal with this actuator latency is to run a simulation using the vehicle model starting from the current state for the duration of latency. And then use the resulting state from the simulation as the new initial state. In this project this is realized in the code in main.cpp like this:
+```sh
+          //Add 100ms actuator latency, create a new initial state for MPC using the vehicle model
+          //starting from the current state for the duration of latency
+          double latency = 0.1;
+          std::vector<double> current_state = {px, py, psi, v, acceleration, delta};
+          
+          //Predict new initial state with consideration of 100ms actuator latency
+          std::vector<double> new_state = mpc.LatencyPredict(current_state, latency);
+          double px_new = new_state[0];
+          double py_new = new_state[1];
+          double psi_new = new_state[2];
+          double v_new = new_state[3];
+```
+
+And the LatencyPredict function is defined in MPC.cpp like this:
+```sh
+//Predict new vehicle state using vehicle model and latency time
+std::vector<double> MPC::LatencyPredict(std::vector<double> state, double latency) {
+  double px = state[0];
+  double py = state[1];
+  double psi = state[2];
+  double v = state[3];
+  double acceleration = state[4];
+  double delta = state[5];
+
+  //Calculate new initial states after actuator latency based on original initial state
+  //using vehicle kinematic equations
+  double px_new = px + (v * cos(psi) * latency);
+  double py_new = py + (v * sin(psi) * latency);
+  double psi_new = psi - ((v * delta * latency)/Lf);
+  double v_new = v + (acceleration * latency);
+
+  std::vector<double> result = {px_new, py_new, psi_new, v_new};
+
+  return result;
+}
+```
+## MPC Tuning
+
+### N and dt tuning
+One important tuning of MPC is to tune number of steps in horizon **N** and time elapses between actuations. As suggested in class, first is to pick a reasonable **T** which is called prediction horize T = N * dt. For driving car, T should be a few seconds at most. Otherwise the car is not predictable. So I first pick T = 1s with two combinations of N and dt:
+
