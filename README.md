@@ -37,8 +37,47 @@ The implementation of MPC in this project involves these parts:
     ![alt text][image2]
     ![alt text][image3]
     ![alt text][image4]
+    
+  In MPC.cpp, the code for this part is identified as equality constrants as shown below:
+  ```sh
+      fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
+      fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
+      fg[1 + psi_start + t] = psi1 - (psi0 + v0 * delta0 / Lf * dt);
+      fg[1 + v_start + t] = v1 - (v0 + a0 * dt);
+      fg[1 + cte_start + t] =
+          cte1 - ((f0 - y0) + (v0 * CppAD::sin(epsi0) * dt));
+      fg[1 + epsi_start + t] =
+          epsi1 - ((psi0 - psides0) + v0 * delta0 / Lf * dt);
+  ```
   
-* Compile: `cmake .. && make`
+* Define cost function components and actuator inequality constraints
+
+  Cost function is the criteria used by MPC optimizer to select the optimized control and trajectory, the goal is to minimize the cost function with optimized control. Cost function component selection is very flexible and can be designed pretty well for realizing different control purposes. For example in this project, the main goal is to minize the cross track and heading angle error between real trajectory and reference one. So the main part of cost function should be that. And also in order to ensure smooth and stable vehicle control, actuator transition smoothness is also incorporated into cost function. This can shown in code in MPC.cpp here:
+
+  ```sh
+    // The part of the cost based on the reference state.
+    for (int t = 0; t < N; t++) {
+      fg[0] += 1500 * CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += 1500 * CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += 10 * CppAD::pow(vars[v_start + t] - ref_v, 2);
+    }
+
+    // Minimize the use of actuators.
+    for (int t = 0; t < N - 1; t++) {
+      fg[0] += 100 * CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += 10 * CppAD::pow(vars[a_start + t], 2);
+
+      //This is to reduce speed at turns and increase on straight road
+      fg[0] += 1000*CppAD::pow((vars[t + v_start] * vars[t + delta_start]), 2);
+    }
+
+    // Minimize the value gap between sequential actuations.
+    for (int t = 0; t < N - 2; t++) {
+      fg[0] += 50 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += 50 * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+    }
+  ```
+  
 * Run it: `./mpc`.
 
 ## Tips
