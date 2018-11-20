@@ -166,3 +166,31 @@ std::vector<double> MPC::LatencyPredict(std::vector<double> state, double latenc
 ### N and dt tuning
 One important tuning of MPC is to tune number of steps in horizon **N** and time elapses between actuations. As suggested in class, first is to pick a reasonable **T** which is called prediction horize T = N * dt. For driving car, T should be a few seconds at most. Otherwise the car is not predictable. So I first pick T = 1s with two combinations of N and dt:
 
+* N = 20, dt = 0.05
+The test result is shown in [video1](https://github.com/GitHubChuanYu/T2Project5_ModelPredictiveControl/blob/master/N_20_dT_005_MPC.mp4)
+As you can see from the video, the car is pretty good at straight line and smooth corner driving, however it failed at second sharp corner. I think the reason is that the prediction horizon or number of steps N are relative large so the prediction is not accurate anymore in sharp corner for the car to drive throught it smoothly.
+
+* N = 10, dt = 0.1
+The test result is shown in [video2](https://github.com/GitHubChuanYu/T2Project5_ModelPredictiveControl/blob/master/N_10_dT_01_MPC.mp4)
+From the video, we can also see that MPC drives the car off the track at the second sharp corner. This time N is small, but the problem is dt is not small enough to accurate predicte the fast change in corner, this is related to the so-called "discretization error".
+
+So after the above try, I am thinking to reduce T to 0.5s and also tried two combinations:
+
+* N = 20, dt = 0.025
+The test result is shown in [video3](https://github.com/GitHubChuanYu/T2Project5_ModelPredictiveControl/blob/master/N_20_dT_0025_MPC.mp4)
+Now the car can drive through the track without leaving the track successfully. I think this is mainly because dt is further reduced to 0.025 compared with dt = 0.05 with N kept the same at 20, so each prediction and control is more accurate so that the car can drive through sharp corner successfully.
+
+* N = 10, dt = 0.1
+The test result is shown in [video4](https://github.com/GitHubChuanYu/T2Project5_ModelPredictiveControl/blob/master/N_10_dT_005_MPC.mp4)
+With the comination, the car can also drives through track without leaving the lane successfully, however compared with N = 20, dt = 0.025, this tune of MPC does not have more accurate prediction at each step but less prediction steps, so it can also drive through sharp corner but just with less smoothness and higher speed compared with N = 20 and dt = 0.025.
+
+Besides above tuning sets, I have also tried other cominations as shown below:
+
+* N = 5, dt = 0.05 (T = 0.25s): [video5](https://github.com/GitHubChuanYu/T2Project5_ModelPredictiveControl/blob/master/N_5_dT_005_MPC.mp4)
+The number of steps for predictive N is too short, the car does not follow the track from the beginning.
+
+* N = 5, dt = 0.1 (T = 0.5s): [video6](https://github.com/GitHubChuanYu/T2Project5_ModelPredictiveControl/blob/master/N_5_dT_01_MPC.mp4)
+The number of steps for predictive N is too short, the car does not follow the track from the beginning.
+
+* N = 7, dt = 0.07 (T = 0.49s): [video7](https://github.com/GitHubChuanYu/T2Project5_ModelPredictiveControl/blob/master/N_7_dT_007_MPC.mp4)
+Even the car follows the track, but it is off the lane center lane too much, so the performance is not as good as N = 20, dt = 0.025 or N = 10, dt = 0.05.
