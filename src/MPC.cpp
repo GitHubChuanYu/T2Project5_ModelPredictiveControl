@@ -6,8 +6,8 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 7;
-double dt = 0.07;
+size_t N = 10;
+double dt = 0.05;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -64,7 +64,7 @@ class FG_eval {
       fg[0] += 10 * CppAD::pow(vars[a_start + t], 2);
 
       //This is to reduce speed at turns and increase on straight road
-      fg[0] += 500*CppAD::pow((vars[t + v_start] * vars[t + delta_start]), 2);
+      fg[0] += 1000*CppAD::pow((vars[t + v_start] * vars[t + delta_start]), 2);
     }
 
     // Minimize the value gap between sequential actuations.
