@@ -2,6 +2,12 @@
 This is Chuan's writeup report for Udacity self-driving car nano degree program term 2 project 4 Model Predictive Controller (MPC)
 
 ---
+[//]: # (Image References)
+
+[image1]: ./SystemStates.png "SystemStates"
+[image2]: ./VehicleModelEquations.png "vehiclemodel"
+[image3]: ./CTEEquations.png "CTEEquation"
+[image4]: ./EpsiEquations.png "epsiEquation"
 
 ## MPC Introduction
 
@@ -16,10 +22,22 @@ This is Chuan's writeup report for Udacity self-driving car nano degree program 
 
 The implementation of MPC in this project involves these parts:
 
-* Define system states
+* Define system states and actuator inputs
   
-  The system states are decided based on critical states in vehicle dynamic models and also critical states for trajectory following. So in this project, vehicle x and y position, vehicle heading angle, vehicle speed from vehicle model and cross track error heading angle angle from trajctory following are considered a good combination of system states for MPC: 
-* Make a build directory: `mkdir build && cd build`
+  The system states are decided based on critical states in vehicle dynamic models and also critical states for trajectory following. So in this project, vehicle x and y position, vehicle heading angle, vehicle speed from vehicle model and cross track error heading angle angle from trajctory following are considered a good combination of system states for MPC:
+  
+  ![alt text][image1]
+  
+  The actuator inputs are selected as vehicle steering angle input **delta** and vehicle accleration/deceleration **a**.
+  
+* Define system state equations
+
+  After system states and actuator inputs are defined, then we need to relate them with system state equations for control problem. The system state equations contain also two part, one is from original vehicle dynamic model (bicycle model), another is for updating cross track error and heading angle error:
+  
+    ![alt text][image2]
+    ![alt text][image3]
+    ![alt text][image4]
+  
 * Compile: `cmake .. && make`
 * Run it: `./mpc`.
 
