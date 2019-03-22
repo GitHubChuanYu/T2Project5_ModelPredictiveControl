@@ -24,7 +24,7 @@ The implementation of MPC in this project involves these parts:
 
 * Define system states and actuator inputs
   
-  The system states are decided based on critical states in vehicle dynamic models and also critical states for trajectory following. So in this project, vehicle x and y position, vehicle heading angle, vehicle speed from vehicle model and cross track error heading angle angle from trajctory following are considered a good combination of system states for MPC:
+  The system states are decided based on critical states in vehicle dynamic models and also critical states for trajectory following. So in this project, vehicle x and y position, vehicle heading angle, vehicle speed from vehicle model, cross track error, and vehicle orientation error are considered a good combination of system states for MPC:
   
   ![alt text][image1]
   
